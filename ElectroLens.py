@@ -18,8 +18,14 @@ def view(data):
     else:
         config = data
     cef.Initialize()
+    cwd = os.getcwd()
+    try:
+        os.chdir("ElectroLens-python")
+    except:
+        pass
     browser = cef.CreateBrowserSync(url='file://' + os.path.realpath("index_cefpython.html"),
                                     window_title="Javascript Bindings")
+    os.chdir(cwd)
     browser.SetClientHandler(LoadHandler(config))
     bindings = cef.JavascriptBindings()
     browser.SetJavascriptBindings(bindings)
