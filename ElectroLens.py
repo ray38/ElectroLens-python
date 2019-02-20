@@ -10,7 +10,7 @@ from ase.io.trajectory import TrajectoryReader
 
 
 def view(data):
-    print type(data)
+    #print type(data)
     if isinstance(data, Atoms):
         config = atomsToConfig(data)
     elif isinstance(data, TrajectoryReader):
@@ -35,7 +35,7 @@ def view(data):
     return 
 
 def atomsToConfig(a):
-    print "converting atoms to config"
+    #print "converting atoms to config"
     systemDimension = {}
     systemDimension["x"] = [0,a.cell[0][0]]
     systemDimension["y"] = [0,a.cell[1][1]]
@@ -65,7 +65,7 @@ def atomsToConfig(a):
 
 
 def trajToConfig(a):
-    print "converting traj to config"
+    #print "converting traj to config"
     systemDimension = {}
     systemDimension["x"] = [0,a[0].cell[0][0]]
     systemDimension["y"] = [0,a[0].cell[1][1]]
@@ -80,7 +80,6 @@ def trajToConfig(a):
     temp["moleculeData"] = {}
     temp["moleculeData"]["data"] = []
     for i in range(len(a)):
-        print i
         atoms = a[i]
         for atom in atoms:
             temp_atom = {}
