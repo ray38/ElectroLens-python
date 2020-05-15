@@ -1,0 +1,69 @@
+body {
+	color: #000;
+	font-family:Monospace;
+	font-size:13px;
+	text-align:center;
+	background-color: #fff;
+	margin: 0px;
+  height: 100%;
+  width: 100%;
+	overflow: hidden;
+}
+#info {
+	position: absolute;
+	top: 0px; width: 100%;
+	padding: 5px;
+}
+a {
+	color: #0080ff;
+}
+
+/* DAT GUI */
+
+
+.dg {
+    text-align: left;
+}
+
+.dg {
+       font: 400 5px Verdana, Arial, sans-serif;
+} 
+/*
+div.dg li:not(.folder){
+	height:20px;
+	line-height: 20px;
+}
+*/
+.outer {
+  display: table;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.middle {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.inner {
+  margin-left: auto;
+  margin-right: auto;
+  height: 120px;
+  width: 70%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  /*whatever width you want*/
+}
+
+.inner2 {
+  margin-left: auto;
+  margin-right: auto;
+  height: 70%;
+  width: 70%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  /*whatever width you want*/
+}

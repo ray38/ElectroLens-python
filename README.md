@@ -1,2 +1,3 @@
-# ElectroLens-python
-python library for ElectroLens
+# ElectroLens
+
+This is a visualiation tool for high dimensional data
