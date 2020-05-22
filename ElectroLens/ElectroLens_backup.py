@@ -4,10 +4,6 @@ inter-process messaging with the use of Javascript Bindings.
 """
 
 from cefpython3 import cefpython as cef
-import base64
-import platform
-import sys
-import threading
 import os
 import json
 import csv
@@ -51,16 +47,6 @@ from sklearn.preprocessing import normalize
 #     cef.Shutdown()
 #     return 
 
-def check_versions():
-    ver = cef.GetVersion()
-    print("[tutorial.py] CEF Python {ver}".format(ver=ver["version"]))
-    print("[tutorial.py] Chromium {ver}".format(ver=ver["chrome_version"]))
-    print("[tutorial.py] CEF {ver}".format(ver=ver["cef_version"]))
-    print("[tutorial.py] Python {ver} {arch}".format(
-           ver=platform.python_version(),
-           arch=platform.architecture()[0]))
-    assert cef.__version__ >= "57.0", "CEF Python v57.0+ required to run this"
-
 def view(data):
     #print type(data)
     #config = trajToConfig2(data)
@@ -73,12 +59,10 @@ def view(data):
         config = data
     with open('temp_data.json', 'w') as fp:
         json.dump(config , fp, indent=4)
-    check_versions()
-    sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {
-        #"debug": True,
-        #"log_severity": cef.LOGSEVERITY_INFO,
-        #"log_file": "debug.log",
+        "debug": True,
+        "log_severity": cef.LOGSEVERITY_INFO,
+        "log_file": "debug.log",
     }
     cef.Initialize(settings=settings)
     cwd = os.getcwd()
@@ -92,14 +76,13 @@ def view(data):
     dir_path = os.path.dirname(__file__)
     index_filepath = os.path.join(dir_path, 'static/index_cefpython.html')
     browser = cef.CreateBrowserSync(url=index_filepath,
-                                    window_title="ElectroLens")#, 
-                                    # settings = browser_setting)
-    # os.chdir(cwd)
+                                    window_title="ElectroLens", settings = browser_setting)
+    os.chdir(cwd)
     browser.SetClientHandler(LoadHandler(config))
     bindings = cef.JavascriptBindings()
     browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()
-    # del browser
+    del browser
     cef.Shutdown()
     return 
 
