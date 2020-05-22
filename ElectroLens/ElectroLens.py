@@ -275,5 +275,10 @@ class LoadHandler(object):
 
     def __init__(self, config):
         self.config = config
-    def OnLoadEnd(self, browser, **_):
-        browser.ExecuteFunction("defineData", self.config)
+    #def OnLoadEnd(self, browser, **_):
+    #    browser.ExecuteFunction("defineData", self.config)
+    def OnLoadingStateChange(self, browser, is_loading, **_):
+        """Called when the loading state has changed."""
+        if not is_loading:
+            # Loading is complete. DOM is ready.
+            browser.ExecuteFunction("defineData", self.config)
