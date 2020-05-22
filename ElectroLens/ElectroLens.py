@@ -53,10 +53,10 @@ from sklearn.preprocessing import normalize
 
 def check_versions():
     ver = cef.GetVersion()
-    print("[tutorial.py] CEF Python {ver}".format(ver=ver["version"]))
-    print("[tutorial.py] Chromium {ver}".format(ver=ver["chrome_version"]))
-    print("[tutorial.py] CEF {ver}".format(ver=ver["cef_version"]))
-    print("[tutorial.py] Python {ver} {arch}".format(
+    print("[ElectroLens] CEF Python {ver}".format(ver=ver["version"]))
+    print("[ElectroLens] Chromium {ver}".format(ver=ver["chrome_version"]))
+    print("[ElectroLens] CEF {ver}".format(ver=ver["cef_version"]))
+    print("[ElectroLens] Python {ver} {arch}".format(
            ver=platform.python_version(),
            arch=platform.architecture()[0]))
     assert cef.__version__ >= "57.0", "CEF Python v57.0+ required to run this"
@@ -97,7 +97,7 @@ def view(data):
     # os.chdir(cwd)
     browser.SetClientHandler(LoadHandler(config))
     bindings = cef.JavascriptBindings()
-    browser.SetJavascriptBindings(bindings)
+    #browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()
     # del browser
     cef.Shutdown()
