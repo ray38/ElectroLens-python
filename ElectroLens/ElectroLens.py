@@ -151,9 +151,10 @@ def view(data):
     check_versions()
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {
-        #"debug": True,
-        #"log_severity": cef.LOGSEVERITY_INFO,
-        #"log_file": "debug.log",
+        "debug": True,
+        "log_severity": cef.LOGSEVERITY_INFO,
+        "log_file": "debug.log",
+        "remote_debugging_port":8080,
     }
     cef.Initialize(settings=settings)
     cwd = os.getcwd()
