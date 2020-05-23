@@ -15,41 +15,116 @@ from ase import Atoms
 from ase.io.trajectory import TrajectoryReader
 from sklearn.preprocessing import normalize
 
+HTML_code = """
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link href="static/css/main.css" rel="stylesheet" />
+		<style type="text/css">
+			* {
+				.border-radius(0) !important;
+			  }
+			html, body {
+			  height: 100%;
+			  display: flex;
+			  flex-direction: column;
+			}
+			.text-divider{margin: 1.2em 0; line-height: 0; text-align: center;}
+			.text-divider span{background-color: #ffffff; padding: 0.5em;}
+			.text-divider:before{ content: " "; display: block; border-top: 1px solid #e3e3e3; border-bottom: 1px solid #f7f7f7;}
+			.load-window{overflow: scroll;height: 15%; width: 80%;left: 10%;align-items: center;}
+			.config-window{overflow: scroll;height: 75%; width: 80%;left: 10%;align-items: center;}
+		  </style>
+		  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+		  <script src="vendor/jquery/jquery-3.4.1.js"></script>
+		  <script src="vendor/bootstrap/js/bootstrap.js"></script>
+		  <link href="vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
+		  <link href="static/css/main.css" rel="stylesheet" />
+		
+		  <script src="node_modules/es6/ES6.js"></script>
+			
+		  <script src="static/js/kdtree.js"></script>
+		  <script src="static/js/progressbar.js"></script>
+		  <script src="static/js/three.js"></script>
 
-# def view(data):
-#     #print type(data)
-#     if isinstance(data, Atoms):
-#         config = atomsToConfig(data)
-#     elif isinstance(data, TrajectoryReader):
-#         config = trajToConfig(data)
-#     else:
-#         config = data
-#     cef.Initialize()
-#     # cwd = os.getcwd()
-#     # try:
-#     #     os.chdir("ElectroLens-python")
-#     # except:
-#     #     pass
-    
-#     dir_path = os.path.dirname(__file__)
-#     # index_filepath = 'file://' + os.path.join(dir_path, 'index_cefpython.html')
-#     index_filepath = os.path.join(dir_path, 'static/index_cefpython.html')
-#     print(index_filepath)
+		  <script src="static/js/three-spritetext.js"></script>
+		  <script src="static/js/jeezy.js"></script>
+		  <script src="static/js/data2grid.js"></script>
+		  <script src="static/js/effects/AnaglyphEffect.js"></script>
+		  <link rel="stylesheet" type="text/css" href="static/js/loading-bar.css"/>
+		  <script src="static/js/loading-bar.js"></script>
+		
+		  
+		
+		  <script src="static/js/jQuery.js"></script>
+		 
+		
+		  
+		
+		  <script src="static/js/Detector.js"></script>
+		  <script src="static/js/libs/stats.min.js"></script>
+		  <script src="./MultiviewControl/customizeLut.js"></script>
+		  <script src="static/js/controls/OrbitControls.js"></script>
+		  <script src="static/js/controls/TrackballControls.js"></script>
+		  <script src="static/js/libs/dat.gui.js"></script>
+		  <script src="static/D3js/d3.min.js"></script>
+		  <script src="static/D3js/d3-queue.v3.min.js"></script>
+		
+		  <link href="static/css/modify_datgui.css" rel="stylesheet">
+		  
+		  <script>if (window.module) module = window.module;</script>
+	</head>
+	<body>
+		<div id="UI">
+		</div>
+		<div id="container"></div>
+		
+		
 
-#     browser_setting = { "file_access_from_file_urls_allowed":True,\
-#                     "universal_access_from_file_urls_allowed": True,\
-#                     "web_security_disabled":True}
-                    
-#     browser = cef.CreateBrowserSync(url=index_filepath,
-#                                     window_title="ElectroLens", settings = browser_setting)
-#     # os.chdir(cwd)
-#     browser.SetClientHandler(LoadHandler(config))
-#     bindings = cef.JavascriptBindings()
-#     browser.SetJavascriptBindings(bindings)
-#     cef.MessageLoop()
-#     del browser
-#     cef.Shutdown()
-#     return 
+		<script src="<AbsolutePathToDirectory>/static/2D3D_connection_heatmap_test.js"></script>
+		<script type="text/javascript">
+			function defineData(datainput){
+				
+				//console.log(electroLensMain);
+				console.log("start")
+				data = datainput;
+				//console.log("end")
+				console.log(data);
+                var loc = window.location.pathname;
+                var dir = loc.substring(0, loc.lastIndexOf('/'));
+                console.log(loc);
+                console.log(dir);
+				electroLensMain();
+			}
+		</script>
+		
+			
+
+
+	</body>
+</html>
+
+"""
+def html_to_data_uri(html, js_callback=None):
+    # This function is called in two ways:
+    # 1. From Python: in this case value is returned
+    # 2. From Javascript: in this case value cannot be returned because
+    #    inter-process messaging is asynchronous, so must return value
+    #    by calling js_callback.
+    html = html.encode("utf-8", "replace")
+    b64 = base64.b64encode(html).decode("utf-8", "replace")
+    ret = "data:text/html;base64,{data}".format(data=b64)
+    if js_callback:
+        js_print(js_callback.GetFrame().GetBrowser(),
+                 "Python", "html_to_data_uri",
+                 "Called from Javascript. Will call Javascript callback now.")
+        js_callback.Call(ret)
+    else:
+        print("not js callback")
+        print(ret)
+        return ret
 
 def check_versions():
     ver = cef.GetVersion()
@@ -82,19 +157,15 @@ def view(data):
     }
     cef.Initialize(settings=settings)
     cwd = os.getcwd()
-    # try:
-    #     os.chdir("ElectroLens-python")
-    # except:
-    #     pass
+
     browser_setting = { "file_access_from_file_urls_allowed":True,\
                     "universal_access_from_file_urls_allowed": True,\
                     "web_security_disabled":True}
-    dir_path = os.path.dirname(__file__)
+    dir_path = os.path.dirname(__file__).replace("\\","/")
     index_filepath = os.path.join(dir_path, 'static/index_cefpython.html')
-    browser = cef.CreateBrowserSync(url=index_filepath,
-                                    window_title="ElectroLens")#, 
-                                    # settings = browser_setting)
-    # os.chdir(cwd)
+    browser = cef.CreateBrowserSync(url=index_filepath,#url=html_to_data_uri(HTML_code.replace("<AbsolutePathToDirectory>",dir_path)),
+                                    window_title="ElectroLens", 
+                                    settings = browser_setting)
     browser.SetClientHandler(LoadHandler(config))
     bindings = cef.JavascriptBindings()
     #browser.SetJavascriptBindings(bindings)
