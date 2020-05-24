@@ -164,10 +164,12 @@ def view(data):
                     "web_security_disabled":True}
     dir_path = os.path.dirname(__file__).replace("\\","/")
     index_filepath = os.path.join(dir_path, 'static/index_cefpython.html')
+    print(index_filepath)
     browser = cef.CreateBrowserSync(url=index_filepath,#url=html_to_data_uri(HTML_code.replace("<AbsolutePathToDirectory>",dir_path)),
                                     window_title="ElectroLens", 
                                     settings = browser_setting)
     browser.SetClientHandler(LoadHandler(config))
+    browser.ShowDevTools()
     bindings = cef.JavascriptBindings()
     #browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()

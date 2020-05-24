@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link href="css/main.css" rel="stylesheet" />
+		<style type="text/css">
+			* {
+				.border-radius(0) !important;
+			  }
+			html, body {
+			  height: 100%;
+			  display: flex;
+			  flex-direction: column;
+			}
+			.text-divider{margin: 1.2em 0; line-height: 0; text-align: center;}
+			.text-divider span{background-color: #ffffff; padding: 0.5em;}
+			.text-divider:before{ content: " "; display: block; border-top: 1px solid #e3e3e3; border-bottom: 1px solid #f7f7f7;}
+			.load-window{overflow: scroll;height: 15%; width: 80%;left: 10%;align-items: center;}
+			.config-window{overflow: scroll;height: 75%; width: 80%;left: 10%;align-items: center;}
+		  </style>
+			
+		  <script src="js/kdtree.js"></script>
+		  <script src="js/three.js"></script>
+		  <script src="js/jeezy.js"></script>
+		  <script src="js/data2grid.js"></script>
+		
+		  
+		
+		  <script src="js/jQuery.js"></script>
+		 
+		
+		  
+		
+		  <script src="js/Detector.js"></script>
+		  <script src="js/libs/stats.min.js"></script>
+		  <script src="js/controls/OrbitControls.js"></script>
+		  <script src="js/controls/TrackballControls.js"></script>
+		  <script src="js/libs/dat.gui.js"></script>
+		  <script src="D3js/d3.min.js"></script>
+		  <script src="D3js/d3-queue.v3.min.js"></script>
+		
+		  <link href="css/modify_datgui.css" rel="stylesheet">
+		  
+	</head>
+	<body>
+		<div id="UI">
+		</div>
+		<div id="container"></div>
+		
+		
+
+		<script src="2D3D_connection_heatmap_test.js"></script>
+		<script type="text/javascript">
+			function defineData(datainput){
+				
+				//console.log(electroLensMain);
+				console.log("start")
+				data = datainput;
+				//console.log("end")
+				console.log(data);
+				electroLensMain();
+			}
+		</script>
+
+	</body>
+</html>
