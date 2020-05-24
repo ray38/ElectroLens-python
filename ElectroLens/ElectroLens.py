@@ -163,7 +163,7 @@ def view(data):
                     "universal_access_from_file_urls_allowed": True,\
                     "web_security_disabled":True}
     dir_path = os.path.dirname(__file__).replace("\\","/")
-    index_filepath = os.path.join(dir_path, 'static/index_cefpython.html')
+    index_filepath = os.path.join(dir_path, 'static/index_cefpython_clean.html')
     print(index_filepath)
     browser = cef.CreateBrowserSync(url=index_filepath,#url=html_to_data_uri(HTML_code.replace("<AbsolutePathToDirectory>",dir_path)),
                                     window_title="ElectroLens", 
