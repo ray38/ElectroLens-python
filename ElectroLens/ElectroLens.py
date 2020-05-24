@@ -55,15 +55,14 @@ def view(data):
         config = trajToConfig(data)
     else:
         config = data
-    with open('temp_data.json', 'w') as fp:
-        json.dump(config , fp, indent=4)
+    
     check_versions()
     sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
     settings = {
-        "debug": True,
-        "log_severity": cef.LOGSEVERITY_INFO,
-        "log_file": "debug.log",
-        "remote_debugging_port":8080,
+        #"debug": True,
+        #"log_severity": cef.LOGSEVERITY_INFO,
+        #"log_file": "debug.log",
+        #"remote_debugging_port":8080,
     }
     cef.Initialize(settings=settings)
     cwd = os.getcwd()
@@ -103,18 +102,6 @@ def atomsToConfig(a):
     temp["moleculeData"] = {}
 
     lattice_vector = normalize(a.cell,axis=1)
-    print(lattice_vector)
-    # temp["systemLatticeVectors"] = {
-    #     "u11": lattice_vector[0][0],
-    #     "u12": lattice_vector[0][1],
-    #     "u13": lattice_vector[0][2],
-    #     "u21": lattice_vector[1][0],
-    #     "u22": lattice_vector[1][1],
-    #     "u23": lattice_vector[1][2],
-    #     "u31": lattice_vector[2][0],
-    #     "u32": lattice_vector[2][1],
-    #     "u33": lattice_vector[2][2]
-    #   },
 
     temp["systemLatticeVectors"] = {}
     temp["systemLatticeVectors"]["u11"] = lattice_vector[0][0]
@@ -127,7 +114,6 @@ def atomsToConfig(a):
     temp["systemLatticeVectors"]["u32"] = lattice_vector[2][1]
     temp["systemLatticeVectors"]["u33"] = lattice_vector[2][2]
 
-    print(temp["systemLatticeVectors"])
 
     temp["moleculeData"]["data"] = []
     for atom in a:
@@ -141,6 +127,9 @@ def atomsToConfig(a):
     config["views"].append(temp)
     config["plotSetup"] = {}
     config["plotSetup"]["moleculePropertyList"] = ["atom"]
+
+    with open('temp_data.json', 'w') as fp:
+        json.dump(config , fp, indent=4)
     return config
 
 
