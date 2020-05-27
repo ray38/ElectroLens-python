@@ -77,7 +77,7 @@ def view(data):
                                     window_title="ElectroLens", 
                                     settings = browser_setting)
     browser.SetClientHandler(LoadHandler(config))
-    #browser.ShowDevTools()
+    browser.ShowDevTools()
     #bindings = cef.JavascriptBindings()
     #browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()

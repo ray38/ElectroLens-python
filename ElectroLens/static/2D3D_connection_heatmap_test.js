@@ -185,7 +185,8 @@ function main(views, plotSetup) {
 			} else {
 				// queue.defer(readCSVSpatiallyResolvedData,view,plotSetup);
 				// queue.defer(readCSVSpatiallyResolvedDataPapaparse,view,plotSetup);
-				queue.defer(_readDataFile.readCSVSpatiallyResolvedDataFastCSV, view, plotSetup);
+				queue.defer(_readDataFile.readCSVSpatiallyResolvedData, view, plotSetup);
+				//queue.defer(_readDataFile.readCSVSpatiallyResolvedDataFastCSV, view, plotSetup);
 			}
 
 			if (view.moleculeData != null && view.moleculeData.data != null) {
@@ -10482,7 +10483,8 @@ function readCSVSpatiallyResolvedDataFastCSV(view, plotSetup, callback) {
 
 		var count = 0;
 		var n = void 0,
-		    currentFrame = void 0;
+			currentFrame = void 0;
+		console.log(fs)
 		var stream = fs.createReadStream(filename, { highWaterMark: 5096 * 1024 });
 
 		var t0 = performance.now();
