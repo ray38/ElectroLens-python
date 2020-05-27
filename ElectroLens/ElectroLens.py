@@ -136,31 +136,31 @@ def atomsToConfig(a):
 def trajToConfig(a):
     #print "converting traj to config"
     systemDimension = {}
-    lattice_constants = a.cell.lengths()
+    lattice_constants = a[0].cell.lengths()
     systemDimension["x"] = lattice_constants[0]
     systemDimension["y"] = lattice_constants[1]
     systemDimension["z"] = lattice_constants[2]
 
     config = {}
 
-        config["views"] = []
-        temp = {}
-        temp["viewType"] = "3DView"
-        temp["moleculeName"] = "test"
-        temp["moleculeData"] = {}
+    config["views"] = []
+    temp = {}
+    temp["viewType"] = "3DView"
+    temp["moleculeName"] = "test"
+    temp["moleculeData"] = {}
 
-        lattice_vector = normalize(a.cell,axis=1)
+    lattice_vector = normalize(a[0].cell,axis=1)
 
-        temp["systemLatticeVectors"] = {}
-        temp["systemLatticeVectors"]["u11"] = lattice_vector[0][0]
-        temp["systemLatticeVectors"]["u12"] = lattice_vector[0][1]
-        temp["systemLatticeVectors"]["u13"] = lattice_vector[0][2]
-        temp["systemLatticeVectors"]["u21"] = lattice_vector[1][0]
-        temp["systemLatticeVectors"]["u22"] = lattice_vector[1][1]
-        temp["systemLatticeVectors"]["u23"] = lattice_vector[1][2]
-        temp["systemLatticeVectors"]["u31"] = lattice_vector[2][0]
-        temp["systemLatticeVectors"]["u32"] = lattice_vector[2][1]
-        temp["systemLatticeVectors"]["u33"] = lattice_vector[2][2]
+    temp["systemLatticeVectors"] = {}
+    temp["systemLatticeVectors"]["u11"] = lattice_vector[0][0]
+    temp["systemLatticeVectors"]["u12"] = lattice_vector[0][1]
+    temp["systemLatticeVectors"]["u13"] = lattice_vector[0][2]
+    temp["systemLatticeVectors"]["u21"] = lattice_vector[1][0]
+    temp["systemLatticeVectors"]["u22"] = lattice_vector[1][1]
+    temp["systemLatticeVectors"]["u23"] = lattice_vector[1][2]
+    temp["systemLatticeVectors"]["u31"] = lattice_vector[2][0]
+    temp["systemLatticeVectors"]["u32"] = lattice_vector[2][1]
+    temp["systemLatticeVectors"]["u33"] = lattice_vector[2][2]
 
     length = len(a) * len(a[0])
 
@@ -219,7 +219,8 @@ def trajToConfig(a):
         config["plotSetup"]["frameProperty"] = "frame"
         config["plotSetup"]["moleculePropertyList"] = ["atom","frame"]
 
-
+    with open('temp_data.json', 'w') as fp:
+        json.dump(config , fp, indent=4)
 
     return config
 
