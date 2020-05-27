@@ -136,16 +136,36 @@ def atomsToConfig(a):
 def trajToConfig(a):
     #print "converting traj to config"
     systemDimension = {}
-    systemDimension["x"] = [0,a[0].cell[0][0]]
-    systemDimension["y"] = [0,a[0].cell[1][1]]
-    systemDimension["z"] = [0,a[0].cell[2][2]]
+    lattice_constants = a.cell.lengths()
+    systemDimension["x"] = lattice_constants[0]
+    systemDimension["y"] = lattice_constants[1]
+    systemDimension["z"] = lattice_constants[2]
+
+    config = {}
+
+        config["views"] = []
+        temp = {}
+        temp["viewType"] = "3DView"
+        temp["moleculeName"] = "test"
+        temp["moleculeData"] = {}
+
+        lattice_vector = normalize(a.cell,axis=1)
+
+        temp["systemLatticeVectors"] = {}
+        temp["systemLatticeVectors"]["u11"] = lattice_vector[0][0]
+        temp["systemLatticeVectors"]["u12"] = lattice_vector[0][1]
+        temp["systemLatticeVectors"]["u13"] = lattice_vector[0][2]
+        temp["systemLatticeVectors"]["u21"] = lattice_vector[1][0]
+        temp["systemLatticeVectors"]["u22"] = lattice_vector[1][1]
+        temp["systemLatticeVectors"]["u23"] = lattice_vector[1][2]
+        temp["systemLatticeVectors"]["u31"] = lattice_vector[2][0]
+        temp["systemLatticeVectors"]["u32"] = lattice_vector[2][1]
+        temp["systemLatticeVectors"]["u33"] = lattice_vector[2][2]
 
     length = len(a) * len(a[0])
 
     if length < 10000000:
-        config = {}
-
-        config["views"] = []
+        
         temp = {}
         temp["viewType"] = "3DView"
         temp["moleculeName"] = "test"
@@ -161,7 +181,7 @@ def trajToConfig(a):
                 temp_atom["atom"] = atom.symbol
                 temp_atom["frame"] = i
                 temp["moleculeData"]["data"].append(temp_atom)
-        temp["moleculeData"]["gridSpacing"] = {"x":0.1,"y":0.1,"z":0.1}
+        # temp["moleculeData"]["gridSpacing"] = {"x":0.1,"y":0.1,"z":0.1}
         temp["systemDimension"] = systemDimension
         config["views"].append(temp)
         config["plotSetup"] = {}
@@ -169,9 +189,7 @@ def trajToConfig(a):
         config["plotSetup"]["moleculePropertyList"] = ["atom","frame"]
 
     else:
-        config = {}
 
-        config["views"] = []
         temp = {}
         temp["viewType"] = "3DView"
         temp["moleculeName"] = "test"
