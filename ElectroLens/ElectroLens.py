@@ -45,7 +45,7 @@ def check_versions():
            arch=platform.architecture()[0]))
     assert cef.__version__ >= "57.0", "CEF Python v57.0+ required to run this"
 
-def view(data):
+def view(data, show_dev_tools = False):
     #print type(data)
     #config = trajToConfig2(data)
     print("start")
@@ -77,7 +77,9 @@ def view(data):
                                     window_title="ElectroLens", 
                                     settings = browser_setting)
     browser.SetClientHandler(LoadHandler(config))
-    browser.ShowDevTools()
+    if show_dev_tools:
+        browser.ShowDevTools()
+    #browser.ShowDevTools()
     #bindings = cef.JavascriptBindings()
     #browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()
