@@ -16,24 +16,6 @@ from ase.io.trajectory import TrajectoryReader
 from sklearn.preprocessing import normalize
 
 
-def html_to_data_uri(html, js_callback=None):
-    # This function is called in two ways:
-    # 1. From Python: in this case value is returned
-    # 2. From Javascript: in this case value cannot be returned because
-    #    inter-process messaging is asynchronous, so must return value
-    #    by calling js_callback.
-    html = html.encode("utf-8", "replace")
-    b64 = base64.b64encode(html).decode("utf-8", "replace")
-    ret = "data:text/html;base64,{data}".format(data=b64)
-    if js_callback:
-        js_print(js_callback.GetFrame().GetBrowser(),
-                 "Python", "html_to_data_uri",
-                 "Called from Javascript. Will call Javascript callback now.")
-        js_callback.Call(ret)
-    else:
-        print("not js callback")
-        print(ret)
-        return ret
 
 def check_versions():
     ver = cef.GetVersion()
@@ -45,9 +27,7 @@ def check_versions():
            arch=platform.architecture()[0]))
     assert cef.__version__ >= "57.0", "CEF Python v57.0+ required to run this"
 
-def view(data, show_dev_tools = False):
-    #print type(data)
-    #config = trajToConfig2(data)
+def view(data, show_dev_tools = False, save_config = True, config_filename = "config.json"):
     print("start")
     if isinstance(data, Atoms):
         config = atomsToConfig(data)
@@ -73,15 +53,12 @@ def view(data, show_dev_tools = False):
     dir_path = os.path.dirname(__file__).replace("\\","/")
     index_filepath = "file://" + os.path.join(dir_path, 'static/index_cefpython_clean.html')
     print(index_filepath)
-    browser = cef.CreateBrowserSync(url=index_filepath,#url=html_to_data_uri(HTML_code.replace("<AbsolutePathToDirectory>",dir_path)),
+    browser = cef.CreateBrowserSync(url=index_filepath,
                                     window_title="ElectroLens", 
                                     settings = browser_setting)
     browser.SetClientHandler(LoadHandler(config))
     if show_dev_tools:
         browser.ShowDevTools()
-    #browser.ShowDevTools()
-    #bindings = cef.JavascriptBindings()
-    #browser.SetJavascriptBindings(bindings)
     cef.MessageLoop()
     # del browser
     cef.Shutdown()
