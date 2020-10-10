@@ -1,5 +1,5 @@
 from ase.cluster.cubic import FaceCenteredCubic
-from ElectroLens import view
+from electrolens import view
 
 surfaces = [(1, 0, 0), (1, 1, 0), (1, 1, 1)]
 layers = [6, 9, 5]
