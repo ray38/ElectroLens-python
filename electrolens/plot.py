@@ -54,7 +54,8 @@ class Plot(object):
 
         configuration = {}
         if self.input_configuration_file:
-            configuration = json.load(self.input_configuration_file)
+            with open(self.input_configuration_file, 'r') as file:
+                configuration = json.load(file)
         elif len(self.__views__) == 0:
             raise ValueError('No view or configuration file has been provided')
         else:
