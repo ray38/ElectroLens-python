@@ -2,4 +2,4 @@
 from electrolens.plot import Plot
 
 # import Views
-from electrolens.view import View, ThreeDView, TwoDView, DataFormat
+from electrolens.view import View, ThreeDView, TwoDHeatmap, DataFormat

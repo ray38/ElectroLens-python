@@ -6,6 +6,7 @@ from ase.io.trajectory import TrajectoryReader
 from sklearn.preprocessing import normalize
 import typing
 import csv
+import os
 
 
 class DataFormat(Enum):
@@ -21,6 +22,7 @@ class Converter(object):
     """
     base class for converters that convert input data to electrolens acceptable format
     """
+
     def __init__(self, input_data):
         """
         initializes a Converter object
@@ -61,11 +63,12 @@ class Converter(object):
         """
         raise NotImplementedError()
 
-    def _init_atoms(self, atoms: Atoms) -> None:
+    def _init_atoms(self, atoms: Atoms, data_file: typing.IO) -> None:
         """
         fills up _output_data with common configurations for Atoms object
 
         :param atoms: Atoms object containing input data
+        :param data_file: output data file
         :return: None
         """
         lattice_constants = atoms.cell.lengths()
@@ -88,11 +91,16 @@ class Converter(object):
             }
         }
 
+        if data_file:
+            abs_path = os.path.abspath(data_file.name)
+            self._output_data['view']['moleculeData']['dataFilename'] = abs_path.replace('\\', '/')
+
 
 class SpatiallyResolvedDataConverter(Converter):
     """
     Converter that converts input data to configuration related to Spatially Resolved Data
     """
+
     def convert(self, output_file: typing.IO = None) -> dict:
         pass
 
@@ -101,6 +109,7 @@ class MolecularDataConverter(Converter):
     """
     Converter that converts input data to configuration related to Molecular Data
     """
+
     def convert(self, output_file: typing.IO = None) -> dict:
         if isinstance(self._input_data, Atoms):
             self.__convert_from_atoms__(output_file)
@@ -117,7 +126,7 @@ class MolecularDataConverter(Converter):
         :return: None
         """
         atoms = self._input_data
-        super()._init_atoms(atoms)
+        super()._init_atoms(atoms, output_file)
 
         if output_file:
             writer = csv.writer(output_file, delimiter=',')
@@ -140,6 +149,7 @@ class FramedDataConverter(Converter):
     """
     Converter that converts input data to configuration related to Framed Data
     """
+
     def convert(self, output_file: typing.IO = None) -> dict:
         if isinstance(self._input_data, TrajectoryReader):
             self.__convert_from_trajectory__(output_file)
@@ -154,7 +164,7 @@ class FramedDataConverter(Converter):
         :param output_file: an open file handle to write the configuration for converted data to
         :return: None
         """
-        super()._init_atoms(self._input_data[0])
+        super()._init_atoms(self._input_data[0], output_file)
 
         self._output_data['plot_setup']['frameProperty'] = 'frame'
         self._output_data['plot_setup']['moleculePropertyList'].append('frame')

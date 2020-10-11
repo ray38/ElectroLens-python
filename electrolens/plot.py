@@ -9,12 +9,14 @@ class Plot(object):
     """
     electrolens Plot
     """
-    def __init__(self):
+    def __init__(self, configuration_file: str = None):
         """
         initializes electrolens Plot object
+
+        :param configuration_file: configuration file for the plot
         """
         self.__views__ = []
-        self.input_configuration_file = None
+        self.input_configuration_file = configuration_file
 
     def add_view(self, plot_view: View) -> None:
         """

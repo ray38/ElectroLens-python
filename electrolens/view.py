@@ -71,7 +71,7 @@ class ThreeDView(View):
         # write configuration
         if self.output_data_file:
             configuration['view']['dataFilename'] = self.output_data_file
-            with open(self.output_data_file, mode='w') as file:
+            with open(self.output_data_file, mode='w', newline='') as file:
                 converted_data = self.__converter__.convert(file)
         else:
             converted_data = self.__converter__.convert()
@@ -84,7 +84,7 @@ class ThreeDView(View):
         return configuration
 
 
-class TwoDView(View):
+class TwoDHeatmap(View):
     """
     electrolens 2DHeatmap view
     """
@@ -105,11 +105,15 @@ class TwoDView(View):
 
     def get_configuration(self) -> dict:
         configuration = {
-            'viewType': self.view_type,
-            'plotX': self.plot_x,
-            'plotY': self.plot_y,
-            'plotXTransform': self.plot_x_transform,
-            'plotYTransform': self.plot_y_transform,
+            'view': {
+                'viewType': self.view_type,
+                'plotX': self.plot_x,
+                'plotY': self.plot_y,
+                'plotXTransform': self.plot_x_transform,
+                'plotYTransform': self.plot_y_transform
+            },
+            'plot_setup': {
+            }
         }
 
         return configuration
