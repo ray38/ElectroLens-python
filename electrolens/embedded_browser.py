@@ -1,4 +1,4 @@
-"""handles cefpython browser"""
+"""electrolens embedded browser"""
 
 import sys
 import os
