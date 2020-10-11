@@ -16,7 +16,9 @@ plot = el.Plot()
 view = el.ThreeDView(input_data=atoms, data_format=el.DataFormat.MOLECULAR_DATA, molecule_name='Cu')
 plot.add_view(view)
 
-# you can add multiple views to a plot
+# you can add multiple views (3D or 2D) to a plot
+# adding same view again
+plot.add_view(view)
 
 # show plot
 plot.show()
