@@ -44,7 +44,9 @@ class Converter(object):
                               of the system. Required only when converting from a numpy array of molecular data.
                               ASE Atoms and trajectory data implicitly have this information - when working with just
                               a 2D array of properties, it must be explicitly provided by the user
-        :param np_frame_column: the name of the column representing the frame. Required only when converting from numpy
+        :param np_frame_column: the name of the column representing the frame. Required only when converting from numpy.
+                                electrolens needs to know the name of the property representing the frame in the simulation
+                                in order to display atoms at each frame
         :param np_framed: boolean stating if numpy array data is framed. Default is false
         :param np_atoms: list of atom names for each row in 2D numpy array. when data is 2D array, each row contains
                          properties for a single atom - this list provides the name of each atom for every row
@@ -243,45 +245,62 @@ class ArrayDataConverter(Converter):
         if self.cell is None:
             raise TypeError('missing cell configuration for numpy array input data')
 
+        # check to make sure that the column name list contains 'x', 'y', and 'z' - electrolens expects those exactly
+        if "x" not in self.np_column_names:
+            raise ValueError("column 'x' not present in provided list of column names")
+        elif "y" not in self.np_column_names:
+            raise ValueError("column 'y' not present in provided list of column names")
+        elif "z" not in self.np_column_names:
+            raise ValueError("column 'z' not present in provided list of column names")
+
+        # check if provided frame column name is actually present in the list of column names
+        if self.np_framed and self.np_frame_column not in self.np_column_names:
+            raise ValueError(f'defined frame column {self.np_frame_column} not in provided list of column names')
+
         super()._init_atoms(self.cell, output_file)
 
+        # add additional properties (i.e. not the coordinates) to the list of molecule properties in the JSON config
+        # this will also add the frame property if present
+        additional_props = self.np_column_names.copy()
+        additional_props.remove('x')
+        additional_props.remove('y')
+        additional_props.remove('z')
+        for prop in additional_props:
+            self._output_data['plot_setup']['moleculePropertyList'].append(prop)
+
+        # add relevant frame metadata to JSON configuration
         if self.np_framed:
-            self._output_data['plot_setup']['frameProperty'] = 'frame'
-            self._output_data['plot_setup']['moleculePropertyList'].append('frame')
+            # identify the property representing the frame
+            # the name of the frame property has already been added to moleculePropertyList
+            self._output_data['plot_setup']['frameProperty'] = self.np_frame_column
 
         if output_file:
             writer = csv.writer(output_file, delimiter=',')
-            column_names = ['x', 'y', 'z', 'atom']
-            if self.np_framed:
-                column_names.append('frame')
-            for column in self.np_column_names:
-                column_names.append(column)
-            writer.writerow(column_names)
+            # if the data is framed, a column for the frame should be included in np_column_names
+            col_names = self.np_column_names.copy()
+            col_names.append('atom')
+            writer.writerow(col_names)
 
             for atom in range(len(self._input_data)):
+                # add all of the properties for current atom (including frame if it exists)
                 atom_props = self._input_data[atom]
-                row = [atom_props[0], atom_props[1], atom_props[2], self.np_atoms[atom]]
+                row = []
                 for column in self.np_column_names:
                     col_idx = self.np_column_names.index(column)
                     row.append(atom_props[col_idx])
-                if self.np_framed:
-                    row.append(atom_props[self.np_column_names.index(self.np_frame_column)])
+                # atom is last in the list
+                row.append(self.np_atoms[atom])
                 writer.writerow(row)
         else:
             self._output_data['view']['moleculeData']['data'] = []
             # each row in the 2D array is a single atom and its properties
             for atom in range(len(self._input_data)):
                 atom_props = self._input_data[atom]
-                atom_data = {
-                    'x': atom_props[0],
-                    'y': atom_props[1],
-                    'z': atom_props[2],
-                    'atom': self.np_atoms[atom],
-                }
-                # add the remaining provided data
+                # add value from every column in the row (including the frame property if it exists)
+                atom_data = {}
                 for column in self.np_column_names:
                     col_idx = self.np_column_names.index(column)
                     atom_data[column] = atom_props[col_idx]
-                if self.np_framed:
-                    atom_data["frame"] = atom_props[self.np_column_names.index(self.np_frame_column)]
+                # add the name of the atom
+                atom_data["atom"] = self.np_atoms[atom]
                 self._output_data['view']['moleculeData']['data'].append(atom_data)

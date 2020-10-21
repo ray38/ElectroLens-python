@@ -58,7 +58,8 @@ class ThreeDView(View):
         :param np_atoms: list of atom names for each row in 2D numpy array. when data is 2D array, each row contains
                          properties for a single atom - this list provides the name of each atom for every row
         :param np_column_names: list of column names corresponding to each column in the 2D numpy array. Need the column
-                                names so they can be added to JSON configuration
+                                names so they can be added to JSON configuration. this list MUST contain 'x' 'y' and 'z'
+                                in order for electrolens to display the molecule
         """
         super().__init__("3DView")
         self.input_data = input_data
