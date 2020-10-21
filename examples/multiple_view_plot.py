@@ -17,7 +17,7 @@ plot = el.Plot()
 # create and add a 3d view to the plot
 # depending on the input data, the user will decide if it needs to be converted as framed,
 # molecular or spatially resolved data
-view = el.ThreeDView(input_data=atoms, data_format=el.DataFormat.MOLECULAR_DATA, molecule_name='Cu')
+view = el.ThreeDView(input_data=atoms, data_format=el.DataFormat.ATOMS_DATA, molecule_name='Cu')
 plot.add_view(view)
 
 # you can add multiple views (3D or 2D) to a plot

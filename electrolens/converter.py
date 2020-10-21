@@ -1,21 +1,23 @@
 """converter module contains classes for Spatially Resolved, Molecular and Framed Data conversions from input data"""
 
 from enum import Enum
-from ase import Atoms
+from ase import Atoms, cell
 from ase.io.trajectory import TrajectoryReader
 from sklearn.preprocessing import normalize
 import typing
 import csv
 import os
+import numpy as np
 
 
 class DataFormat(Enum):
     """
     enumeration for electrolens acceptable data format
     """
-    FRAMED_DATA = 1
-    MOLECULAR_DATA = 2
+    TRAJECTORY_DATA = 1
+    ATOMS_DATA = 2
     SPATIALLY_RESOLVED_DATA = 3
+    ARRAY_DATA = 4
 
 
 class Converter(object):
@@ -33,23 +35,37 @@ class Converter(object):
         self._output_data = {'view': {}, 'plot_setup': {}}
 
     @staticmethod
-    def create_converter(data_format: DataFormat, data):
+    def create_converter(data_format: DataFormat, data, np_column_names: list, np_atoms: list, np_framed: bool,
+                         np_frame_column: str, np_atoms_cell: cell.Cell):
         """
         creates new converter
 
+        :param np_atoms_cell: ASE Cell object. The Cell object represents three lattice vectors forming the dimensions
+                              of the system. Required only when converting from a numpy array of molecular data.
+                              ASE Atoms and trajectory data implicitly have this information - when working with just
+                              a 2D array of properties, it must be explicitly provided by the user
+        :param np_frame_column: the name of the column representing the frame. Required only when converting from numpy
+        :param np_framed: boolean stating if numpy array data is framed. Default is false
+        :param np_atoms: list of atom names for each row in 2D numpy array. when data is 2D array, each row contains
+                         properties for a single atom - this list provides the name of each atom for every row
+        :param np_column_names: list of column names corresponding to each column in the 2D numpy array. Need the column
+                                names so they can be added to JSON configuration
         :param data_format: DataFormat enumeration value representing the type of converter to be created
         :param data: input data object. It can be of any supported type
 
         :return: newly created Converter object
         """
-        if data_format == DataFormat.FRAMED_DATA:
-            return FramedDataConverter(data)
+        if data_format == DataFormat.TRAJECTORY_DATA:
+            return ASETrajectoryDataConverter(data)
 
-        if data_format == DataFormat.MOLECULAR_DATA:
-            return MolecularDataConverter(data)
+        if data_format == DataFormat.ATOMS_DATA:
+            return ASEAtomsDataConverter(data)
 
         if data_format == DataFormat.SPATIALLY_RESOLVED_DATA:
             return SpatiallyResolvedDataConverter(data)
+
+        if data_format == DataFormat.ARRAY_DATA:
+            return ArrayDataConverter(data, np_column_names, np_atoms, np_framed, np_frame_column, np_atoms_cell)
 
         raise TypeError("Unknown data format")
 
@@ -63,15 +79,15 @@ class Converter(object):
         """
         raise NotImplementedError()
 
-    def _init_atoms(self, atoms: Atoms, data_file: typing.IO) -> None:
+    def _init_atoms(self, atoms_cell: cell.Cell, data_file: typing.IO) -> None:
         """
         fills up _output_data with common configurations for Atoms object
 
-        :param atoms: Atoms object containing input data
+        :param atoms_cell: ASE cell that describes the system dimensions
         :param data_file: output data file
         :return: None
         """
-        lattice_constants = atoms.cell.lengths()
+        lattice_constants = atoms_cell.lengths()
         self._output_data['plot_setup'] = {
             'moleculePropertyList': ['atom']
         }
@@ -82,7 +98,7 @@ class Converter(object):
             'z': lattice_constants[2]
         }
 
-        lattice_vector = normalize(atoms.cell, axis=1)
+        lattice_vector = normalize(atoms_cell, axis=1)
         self._output_data['view']['moleculeData'] = {
             'systemLatticeVectors': {
                 'u11': lattice_vector[0][0], 'u12': lattice_vector[0][1], 'u13': lattice_vector[0][2],
@@ -105,7 +121,7 @@ class SpatiallyResolvedDataConverter(Converter):
         pass
 
 
-class MolecularDataConverter(Converter):
+class ASEAtomsDataConverter(Converter):
     """
     Converter that converts input data to configuration related to Molecular Data
     """
@@ -114,7 +130,7 @@ class MolecularDataConverter(Converter):
         if isinstance(self._input_data, Atoms):
             self.__convert_from_atoms__(output_file)
         else:
-            raise TypeError('input data is not molecular data')
+            raise TypeError('input data is not ASE molecular data')
 
         return self._output_data
 
@@ -126,7 +142,7 @@ class MolecularDataConverter(Converter):
         :return: None
         """
         atoms = self._input_data
-        super()._init_atoms(atoms, output_file)
+        super()._init_atoms(atoms.cell, output_file)
 
         if output_file:
             writer = csv.writer(output_file, delimiter=',')
@@ -145,7 +161,7 @@ class MolecularDataConverter(Converter):
                 self._output_data['view']['moleculeData']['data'].append(atom_data)
 
 
-class FramedDataConverter(Converter):
+class ASETrajectoryDataConverter(Converter):
     """
     Converter that converts input data to configuration related to Framed Data
     """
@@ -154,7 +170,7 @@ class FramedDataConverter(Converter):
         if isinstance(self._input_data, TrajectoryReader):
             self.__convert_from_trajectory__(output_file)
         else:
-            raise TypeError('input data is not framed data')
+            raise TypeError('input data is not trajectory data')
 
         return self._output_data
 
@@ -164,7 +180,7 @@ class FramedDataConverter(Converter):
         :param output_file: an open file handle to write the configuration for converted data to
         :return: None
         """
-        super()._init_atoms(self._input_data[0], output_file)
+        super()._init_atoms(self._input_data[0].cell, output_file)
 
         self._output_data['plot_setup']['frameProperty'] = 'frame'
         self._output_data['plot_setup']['moleculePropertyList'].append('frame')
@@ -189,3 +205,83 @@ class FramedDataConverter(Converter):
                         'frame': i
                     }
                     self._output_data['view']['moleculeData']['data'].append(atom_data)
+
+
+class ArrayDataConverter(Converter):
+    """
+    Converter that converts a numpy array of data to JSON configuration
+    Supports framed and non-framed data
+    """
+
+    def __init__(self, input_data, np_column_names, np_atoms, np_framed, np_frame_column, atoms_cell):
+        super().__init__(input_data)
+        self.np_column_names = np_column_names
+        self.np_atoms = np_atoms
+        self.np_framed = np_framed
+        self.np_frame_column = np_frame_column
+        self.cell = atoms_cell
+
+    def convert(self, output_file: typing.IO = None) -> dict:
+        if isinstance(self._input_data, np.ndarray):
+            self.__convert_from_np_array__(output_file)
+        else:
+            raise TypeError('input data is not numpy array')
+
+        return self._output_data
+
+    def __convert_from_np_array__(self, output_file: typing.IO):
+        """
+        converts 2D numpy array to configuration for electrolens and stores in _output_data
+        :param output_file: an open file handle to write the configuration for converted data to
+        :return: None
+        """
+        # check if additional inputs are present
+        if self.np_column_names is None:
+            raise TypeError('missing column names for numpy array input data')
+        if self.np_atoms is None:
+            raise TypeError('missing atom names for numpy array input data')
+        if self.cell is None:
+            raise TypeError('missing cell configuration for numpy array input data')
+
+        super()._init_atoms(self.cell, output_file)
+
+        if self.np_framed:
+            self._output_data['plot_setup']['frameProperty'] = 'frame'
+            self._output_data['plot_setup']['moleculePropertyList'].append('frame')
+
+        if output_file:
+            writer = csv.writer(output_file, delimiter=',')
+            column_names = ['x', 'y', 'z', 'atom']
+            if self.np_framed:
+                column_names.append('frame')
+            for column in self.np_column_names:
+                column_names.append(column)
+            writer.writerow(column_names)
+
+            for atom in range(len(self._input_data)):
+                atom_props = self._input_data[atom]
+                row = [atom_props[0], atom_props[1], atom_props[2], self.np_atoms[atom]]
+                for column in self.np_column_names:
+                    col_idx = self.np_column_names.index(column)
+                    row.append(atom_props[col_idx])
+                if self.np_framed:
+                    row.append(atom_props[self.np_column_names.index(self.np_frame_column)])
+                writer.writerow(row)
+        else:
+            self._output_data['view']['moleculeData']['data'] = []
+            # each row in the 2D array is a single atom and its properties
+            for atom in range(len(self._input_data)):
+                atom_props = self._input_data[atom]
+                atom_data = {
+                    'x': atom_props[0],
+                    'y': atom_props[1],
+                    'z': atom_props[2],
+                    'atom': self.np_atoms[atom],
+                }
+                # add the remaining provided data
+                for column in self.np_column_names:
+                    col_idx = self.np_column_names.index(column)
+                    atom_data[column] = atom_props[col_idx]
+                if self.np_framed:
+                    atom_data["frame"] = atom_props[self.np_column_names.index(self.np_frame_column)]
+                self._output_data['view']['moleculeData']['data'].append(atom_data)
