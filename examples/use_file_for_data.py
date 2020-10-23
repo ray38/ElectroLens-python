@@ -22,7 +22,7 @@ plot = el.Plot()
 # output_data_file is the path to the csv data file which will be created/overwritten and filled with data
 view = el.ThreeDView(
     input_data=atoms,
-    data_format=el.DataFormat.MOLECULAR_DATA,
+    data_format=el.DataFormat.ATOMS_DATA,
     molecule_name='Cu',
     output_data_file='data.csv')
 
