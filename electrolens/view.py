@@ -1,125 +1,292 @@
-"""electrolens view definitions"""
-
+"""
+electrolens view module
+"""
+from abc import ABC, abstractmethod
+from collections import namedtuple
+from typing import Union, List
+from ase import Atoms, cell
+from ase.io.trajectory import TrajectoryReader
 from electrolens.converter import Converter, DataFormat
-from ase import cell
+from electrolens import SpatiallyResolvedDataProperties, MolecularDataProperties, FramedDataProperties
+import numpy as np
 
 
-class View(object):
+class SpatiallyResolvedData(object):
     """
-    base class for electrolens views
+    spatially resolved data
     """
-
-    def __init__(self, view_type: str):
+    def __init__(self,
+                 data: Union[str, np.ndarray],
+                 grid_points: list = None,
+                 grid_spacing: list = None):
         """
-        initializes new View object
+        initializes spatially resolved data
+        Args:
+            data: spatially resolved data. it can be a file path or a numpy array
+            grid_points: list of grid_points. e.g. [10,10,10] represents [x,y,z]
+            grid_spacing: list of grid spacing. e.g. [0.2,0.2,0.2] represents [x,y,z]
+        """
+        self.data = data
+        self.grid_points = grid_points
+        self.grid_spacing = grid_spacing
 
-        :param view_type: string representing type of the view
+    def add_configuration(self,
+                          configuration: dict,
+                          properties: SpatiallyResolvedDataProperties,
+                          framed_properties: FramedDataProperties,
+                          data_output_file: str) -> None:
+        """
+        adds spatially resolved data configuration
+        Args:
+            configuration: the configuration dictionary to add elements in
+            properties: spatially resolved data properties provided at plot level
+            framed_properties: framed data properties provided at plot level
+            data_output_file: filepath if data is to be stored in a file instead of configuration
+
+        Returns: None
+        """
+        # create converter
+        converter = Converter.create_converter(data=self.data, target_format=DataFormat.SPATIALLY_RESOLVED_DATA)
+
+        # add configuration
+        if data_output_file is not None:
+            with open(data_output_file, mode='w', newline='') as file:
+                converter.convert(output=configuration,
+                                  properties=properties,
+                                  framed_properties=framed_properties,
+                                  data_output_file=file)
+        else:
+            converter.convert(output=configuration,
+                              properties=properties,
+                              framed_properties=framed_properties)
+
+        # grid points
+        srd_config = configuration['spatiallyResolvedData']
+        if self.grid_points is not None:
+            srd_config['numGridPoints'] = {
+                "x": self.grid_points[0],
+                "y": self.grid_points[1],
+                "z": self.grid_points[2]
+            }
+
+        # grid spacing
+        if self.grid_spacing is not None:
+            srd_config['gridSpacing'] = {
+                "x": self.grid_spacing[0],
+                "y": self.grid_spacing[1],
+                "z": self.grid_spacing[2]
+            }
+
+
+class MolecularData(object):
+    """
+    electrolens molecular data
+    """
+    def __init__(self,
+                 data: Union[str, Atoms, TrajectoryReader, np.ndarray],
+                 np_atoms: List[str] = None,
+                 ase_cell: cell = None):
+        """
+        initializes molecular data
+        Args:
+            data: molecular data. It can be a file path, an Atoms object, a TrajectoryReader object or a numpy array
+            np_atoms: list of columns in case of the data being passed as numpy array
+            ase_cell: ASE cell object in case of the data being passed as numpy array
+        """
+        self.data = data
+        self.np_atoms = np_atoms
+        self.ase_cell = ase_cell
+
+    def add_configuration(self,
+                          configuration: dict,
+                          properties: MolecularDataProperties,
+                          framed_properties: FramedDataProperties,
+                          data_output_file: str) -> None:
+        """
+        adds molecular data configuration
+        Args:
+            configuration: configuration dictionary to add elements in
+            properties: molecular data properties provided at plot level
+            framed_properties: framed data properties provided at plot level
+            data_output_file: filepath if data is to be stored in a file instead of configuration
+
+        Returns: None
+        """
+        # add additional properties for numpy array
+        ExtraProperties = namedtuple('ExtraProperties', ['np_atoms', 'cell'])
+        extra_properties = ExtraProperties(np_atoms=self.np_atoms, cell=self.ase_cell)
+
+        # create converter
+        converter = Converter.create_converter(data=self.data, target_format=DataFormat.MOLECULAR_DATA)
+
+        # add configuration
+        if data_output_file is not None:
+            with open(data_output_file, mode='w', newline='') as file:
+                converter.convert(output=configuration,
+                                  properties=properties,
+                                  framed_properties=framed_properties,
+                                  extra_properties=extra_properties,
+                                  data_output_file=file)
+        else:
+            converter.convert(output=configuration,
+                              properties=properties,
+                              framed_properties=framed_properties,
+                              extra_properties=extra_properties)
+
+
+class View(ABC):
+    """
+    base class of electrolens views
+    """
+    def __init__(self, view_type: str) -> None:
+        """
+        initializes view object
+        Args:
+            view_type: type of view. "3DView" or "2DHeatmap"
         """
         self.view_type = view_type
 
-    def get_configuration(self) -> dict:
+    @abstractmethod
+    def get_configuration(self,
+                          spatially_resolved_properties: SpatiallyResolvedDataProperties = None,
+                          molecular_properties: MolecularDataProperties = None,
+                          framed_properties: FramedDataProperties = None) -> dict:
         """
-        returns electrolens configuration for the view
-        :return: dictionary containing configuration for the view and associated plot setup data
+        provides configuration for the complete view
+        Args:
+            spatially_resolved_properties: spatially resolved data properties provided at plot level
+            molecular_properties: molecular data properties provided at plot level
+            framed_properties: framed data properties provided at plot level
+
+        Returns: dictionary containing view configuration
         """
         raise NotImplementedError()
 
 
 class ThreeDView(View):
     """
-    electrolens 3DView
+    3D View
     """
-
-    def __init__(self,
-                 input_data,
-                 data_format: DataFormat,
-                 molecule_name: str,
-                 np_column_names: list = None,
-                 np_atoms: list = None,
-                 np_framed: bool = False,
-                 np_frame_column: str = "frame",
-                 np_cell: cell.Cell = None,
-                 grid_spacing: dict = None,
-                 output_data_file: str = None):
+    def __init__(self, system_name: str, system_dimensions: list = None, system_lattice_vectors: list = None):
         """
-        initializes electrolens 3DView
-
-        :param input_data: input data for the view. It can have any of the supported types
-        :param data_format: DataFormat enumeration value representing the electrolens configuration format for the view
-        for example: framed, molecular or spatially resolved
-        :param molecule_name: molecule name string
-        :param grid_spacing: grid spacing dictionary in format {'x': value, 'y': value, 'z': value}
-        :param output_data_file: path to the file that will store the data. The data will be part of configuration
-        itself if this parameter is None or not provided
-        :param np_cell: ASE Cell object. The Cell object represents three lattice vectors forming the dimensions
-                              of the system. Required only when converting from a numpy array of molecular data
-        :param np_frame_column: the name of the column representing the frame. Required only when converting from numpy
-        :param np_framed: boolean stating if numpy array data is framed. Default is false
-        :param np_atoms: list of atom names for each row in 2D numpy array. when data is 2D array, each row contains
-                         properties for a single atom - this list provides the name of each atom for every row
-        :param np_column_names: list of column names corresponding to each column in the 2D numpy array. Need the column
-                                names so they can be added to JSON configuration. this list MUST contain 'x' 'y' and 'z'
-                                in order for electrolens to display the molecule
+        initializes electrolens 3D view
+        Args:
+            system_name: system name or molecule name
+            system_dimensions: system dimensions e.g. [1,1,1] represents [x,y,z] values
+            system_lattice_vectors: nested lists for lattice vectors e.g. [[1,0,0],[0,1,0],[0,0,1]] represents
+            [[u11,u12,u13],[u21,u22,u23],[u31,u32,u33]]
         """
         super().__init__("3DView")
-        self.input_data = input_data
-        self.data_format = data_format
-        self.molecule_name = molecule_name
 
-        # user input needed to support creating views with numpy arrays
-        self.np_column_names = np_column_names
-        self.np_atoms = np_atoms
-        self.np_framed = np_framed
-        self.np_frame_column = np_frame_column
-        self.np_cell = np_cell
+        # system name
+        self.system_name = system_name
 
-        self.grid_spacing = grid_spacing
-        self.output_data_file = output_data_file
-
-        # create converter for the view
-        self.__converter__ = Converter.create_converter(self.data_format, self.input_data, self.np_column_names,
-                                                        self.np_atoms, self.np_framed, self.np_frame_column, self.np_cell)
-
-    def get_configuration(self) -> dict:
-        configuration = {
-            'view': {
-                'viewType': self.view_type,
-                'moleculeName': self.molecule_name
+        # system dimensions
+        self.system_dimensions = None
+        if system_dimensions is not None:
+            self.system_dimensions = {
+                'x': system_dimensions[0],
+                'y': system_dimensions[1],
+                'z': system_dimensions[2]
             }
+
+        # system lattice vectors
+        self.system_lattice_vectors = None
+        if system_lattice_vectors is not None:
+            vectors = system_lattice_vectors
+            self.system_lattice_vectors = {
+                'u11': vectors[0][0], 'u12': vectors[0][1], 'u13': vectors[0][2],
+                'u21': vectors[1][0], 'u22': vectors[1][1], 'u23': vectors[1][2],
+                'u31': vectors[2][0], 'u32': vectors[2][1], 'u33': vectors[2][2]
+            }
+
+        # input data
+        self.spatially_resolved_data = None
+        self.molecular_data = None
+        self.spatially_resolved_output_file = None
+        self.molecular_output_file = None
+
+    def add_data(self, data: Union[SpatiallyResolvedData, MolecularData], output_data_file: str = None):
+        """
+        adds data to view
+        Args:
+            data: spatially resolved or molecular data to be added
+            output_data_file: filepath if the data is to be written in a file instead of configuration. This is not
+            required if input data is already a file
+
+        Returns: None
+        """
+        if isinstance(data, SpatiallyResolvedData) or isinstance(data, MolecularData):
+            if isinstance(data.data, str) and output_data_file is not None:
+                raise ValueError("output_data_file is not supported when input is already a file")
+
+            if isinstance(data, SpatiallyResolvedData):
+                self.spatially_resolved_data = data
+                self.spatially_resolved_output_file = output_data_file
+            elif isinstance(data, MolecularData):
+                self.molecular_data = data
+                self.molecular_output_file = output_data_file
+            else:
+                raise ValueError("Unknown data format")
+
+    def get_configuration(self,
+                          spatially_resolved_properties: SpatiallyResolvedDataProperties = None,
+                          molecular_properties: MolecularDataProperties = None,
+                          framed_properties: FramedDataProperties = None) -> dict:
+        """
+        provides configuration for the complete view
+        Args:
+            spatially_resolved_properties: spatially resolved data properties provided at plot level
+            molecular_properties: molecular data properties provided at plot level
+            framed_properties: framed data properties provided at plot level
+
+        Returns: dictionary containing view configuration
+        """
+        configuration = {
+            'viewType': self.view_type,
+            'moleculeName': self.system_name
         }
 
-        # add grid spacing if provided by user
-        if self.grid_spacing:
-            configuration['view']['gridSpacing'] = self.grid_spacing
+        if self.system_dimensions is not None:
+            configuration['systemDimension'] = self.system_dimensions
 
-        # write configuration
-        if self.output_data_file:
-            configuration['view']['dataFilename'] = self.output_data_file
-            with open(self.output_data_file, mode='w', newline='') as file:
-                converted_data = self.__converter__.convert(file)
-        else:
-            converted_data = self.__converter__.convert()
+        if self.system_lattice_vectors is not None:
+            configuration['systemLatticeVectors'] = self.system_lattice_vectors
 
-        for key in converted_data['view'].keys():
-            configuration['view'][key] = converted_data['view'][key]
+        if spatially_resolved_properties is not None:
+            self.spatially_resolved_data.add_configuration(configuration, spatially_resolved_properties,
+                                                           framed_properties, self.spatially_resolved_output_file)
 
-        configuration['plot_setup'] = converted_data['plot_setup']
+        if molecular_properties is not None:
+            self.molecular_data.add_configuration(configuration, molecular_properties,
+                                                  framed_properties, self.molecular_output_file)
+
+        # default system dimensions and lattice vectors
+        if 'systemDimension' not in configuration:
+            configuration['systemDimension'] = {'x': 10, 'y': 10, 'z': 10}
+
+        if 'systemLatticeVectors' not in configuration:
+            configuration['systemLatticeVectors'] = {
+                'u11': 1, 'u12': 0, 'u13': 0,
+                'u21': 0, 'u22': 1, 'u23': 0,
+                'u31': 0, 'u32': 0, 'u33': 1,
+            }
 
         return configuration
 
 
 class TwoDHeatmap(View):
     """
-    electrolens 2DHeatmap view
+    2D Heatmap view
     """
     def __init__(self, plot_x: str, plot_y: str, plot_x_transform: str, plot_y_transform: str):
         """
-        initializes electrolens 2D Heatmap view
-
-        :param plot_x: plot X
-        :param plot_y: plot Y
-        :param plot_x_transform: plot X transform
-        :param plot_y_transform: plot Y transform
+        initializes 2D Heatmap view
+        Args:
+            plot_x: plot_x value
+            plot_y: plot_y value
+            plot_x_transform: plot_x transform value
+            plot_y_transform: plot_y transform value
         """
         super().__init__('2DHeatmap')
         self.plot_x = plot_x
@@ -127,7 +294,19 @@ class TwoDHeatmap(View):
         self.plot_x_transform = plot_x_transform
         self.plot_y_transform = plot_y_transform
 
-    def get_configuration(self) -> dict:
+    def get_configuration(self,
+                          spatially_resolved_properties: SpatiallyResolvedDataProperties = None,
+                          molecular_properties: MolecularDataProperties = None,
+                          framed_properties: FramedDataProperties = None) -> dict:
+        """
+        provides configuration for the complete view
+        Args:
+            spatially_resolved_properties: spatially resolved data properties provided at plot level
+            molecular_properties: molecular data properties provided at plot level
+            framed_properties: framed data properties provided at plot level
+
+        Returns: dictionary containing view configuration
+        """
         configuration = {
             'view': {
                 'viewType': self.view_type,

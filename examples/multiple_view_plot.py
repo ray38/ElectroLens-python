@@ -12,22 +12,22 @@ lc = 3.61000
 atoms = FaceCenteredCubic('Cu', surfaces, layers, latticeconstant=lc)
 
 # create electrolens plot
-plot = el.Plot()
+molecular_data_properties = el.MolecularDataProperties(columns=['x', 'y', 'z', 'atom'])
+plot = el.Plot(molecular_properties=molecular_data_properties)
 
-# create and add a 3d view to the plot
-# depending on the input data, the user will decide if it needs to be converted as framed,
-# molecular or spatially resolved data
-view = el.ThreeDView(input_data=atoms, data_format=el.DataFormat.ATOMS_DATA, molecule_name='Cu')
-plot.add_view(view)
+# create 3D view and add data to it
+view1 = el.ThreeDView(system_name='Cu')
+molecular_data1 = el.MolecularData(data=atoms)
+view1.add_data(molecular_data1)
 
-# you can add multiple views (3D or 2D) to a plot
-# adding same view again
-plot.add_view(view)
+# create another 3D view and add data to it
+view2 = el.ThreeDView(system_name='Cu')
+molecular_data2 = el.MolecularData(data=atoms)
+view2.add_data(molecular_data2)
 
-# will have to figure out the correct values but this will be the api to add a TwoDHeatmap
-# not sure about the parameters here. It does show the 2D panel though.
-# view2 = el.TwoDHeatmap(plot_x="0", plot_y="0", plot_x_transform="linear", plot_y_transform="linear")
-# plot.add_view(view2)
+# add views to the plot
+plot.add_view(view1)
+plot.add_view(view2)
 
 # show plot
 plot.show()
