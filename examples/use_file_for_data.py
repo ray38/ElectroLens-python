@@ -3,7 +3,6 @@ electrolens example to show how to write data into a file instead of putting it 
 directly. This is useful to avoid memory issues for large data.
 """
 
-
 from ase.cluster.cubic import FaceCenteredCubic
 import electrolens as el
 
@@ -14,18 +13,16 @@ lc = 3.61000
 atoms = FaceCenteredCubic('Cu', surfaces, layers, latticeconstant=lc)
 
 # create electrolens plot
-plot = el.Plot()
+molecular_data_properties = el.MolecularDataProperties(columns=['x', 'y', 'z', 'atom'])
+plot = el.Plot(molecular_properties=molecular_data_properties)
 
-# create and add a 3d view to the plot
-# depending on the input data, the user will decide if it needs to be converted as framed,
-# molecular or spatially resolved data
-# output_data_file is the path to the csv data file which will be created/overwritten and filled with data
-view = el.ThreeDView(
-    input_data=atoms,
-    data_format=el.DataFormat.ATOMS_DATA,
-    molecule_name='Cu',
-    output_data_file='data.csv')
+# create 3D view and add data to it
+view = el.ThreeDView(system_name='Cu')
+molecular_data = el.MolecularData(data=atoms)
+view.add_data(data=molecular_data, output_data_file='data.csv')
 
+# add view to the plot
 plot.add_view(view)
 
+# show plot
 plot.show()

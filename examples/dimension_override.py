@@ -1,7 +1,6 @@
 """
-electrolens example to show how to save full plot configuration in a file
+electrolens example to view a single 3D View with system dimensions and lattice vectors provided by user
 """
-
 
 from ase.cluster.cubic import FaceCenteredCubic
 import electrolens as el
@@ -17,15 +16,12 @@ molecular_data_properties = el.MolecularDataProperties(columns=['x', 'y', 'z', '
 plot = el.Plot(molecular_properties=molecular_data_properties)
 
 # create 3D view and add data to it
-view = el.ThreeDView(system_name='Cu')
+view = el.ThreeDView(system_name='Cu',system_dimensions=[10,10,10], system_lattice_vectors=[[1,0,0],[0,1,0],[0,0,1]])
 molecular_data = el.MolecularData(data=atoms)
-view.add_data(data=molecular_data)
+view.add_data(molecular_data)
 
 # add view to the plot
 plot.add_view(view)
 
 # show plot
-#plot.show()
-
-# save configuration
-plot.save_configuration(output_json_file='plot_configuration.json')
+plot.show()

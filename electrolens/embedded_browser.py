@@ -40,7 +40,7 @@ def load_browser(configuration) -> None:
                                     settings=browser_setting)
     browser.SetClientHandler(LoadHandler(configuration))
     # if show_dev_tools:
-    #    browser.ShowDevTools()
+    #browser.ShowDevTools()
     cef.MessageLoop()
     # del browser
     cef.Shutdown()
