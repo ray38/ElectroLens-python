@@ -12,14 +12,14 @@ el.Plot(spatially_resolved_properties: SpatiallyResolvedDataProperties, molecula
 
 ### Parameters
 
-| **Name**                      | **Type**                                                              | **Description**                             |
-| ----------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
-| spatially_resolved_properties | [`SpatiallyResolvedDataProperties`](#SpatiallyResolvedDataProperties) | Properties for spatially resolved data sets |
-| molecular_properties          | `MolecularDataProperties`                                             | Properties for molecular data sets          |
-| framed_properties             | `FramedDataProperties`                                                | Frame property in data sets                 |
-| configuration_file            | `str`                                                                 | JSON configuration file                     |
+| **Name**                      | **Type**                                                                              | **Description**                             |
+| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------- |
+| spatially_resolved_properties | [`SpatiallyResolvedDataProperties`](../Properties.md#SpatiallyResolvedDataProperties) | Properties for spatially resolved data sets |
+| molecular_properties          | `MolecularDataProperties`                                                             | Properties for molecular data sets          |
+| framed_properties             | `FramedDataProperties`                                                                | Frame property in data sets                 |
+| configuration_file            | `str`                                                                                 | JSON configuration file                     |
 
-*If configuration_file provided, none of the properties parameters can be provided. Otherwise, ** at least one** of `SpatiallyResolvedDataProperties` and `MolecularDataProperties` must be provided*
+*If configuration_file provided, none of the properties parameters can be provided. Otherwise, **at least one** of `SpatiallyResolvedDataProperties` and `MolecularDataProperties` must be provided*
 
 #### spatially_resolved_properties
 
@@ -54,7 +54,7 @@ A path to a JSON configuration file from a prior ElectroLens visualization. Elec
 | add_view(plot_view)                  | Add a view                                   |
 | remove_view(plot_view)               | Remove a view                                |
 | show()                               | Create the visualization for the plot's data |
-| save_configuration(output_json_file) |                                              |
+| save_configuration(output_json_file) | Saves generated JSON configuration to a file |
 
 #### add_view(plot_view)
 
@@ -111,5 +111,3 @@ def save_configuration(self, output_json_file: str) -> None
 *Returns: none*
 
 Saves the JSON configuration file created for data sets in the plot at the file specified by the provided path
-
-
