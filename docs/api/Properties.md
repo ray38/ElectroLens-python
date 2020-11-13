@@ -8,51 +8,64 @@ A `Properties` object is created and used at the `Plot` level, so a set of prope
 
 ## MolecularDataProperties (object)
 
-### Initialization
+### Initializer
 
 ```python
-molecular_data_properties = el.MolecularDataProperties(columns=['x', 'y', 'z', 'atom'])
+el.MolecularDataProperties(columns: list)
 ```
 
-Parameters:
+### Parameters
 
-- `columns` (optional): a list of properties to be plotted in the visualization
-  
-  - If none provided, the default is `['x', 'y', 'z']`
-  
-  - Otherwise, if a list is provided, it must contain the 3D coordinates at a minimum
+| **Name** | **Type** | **Description**                                |
+| -------- | -------- | ---------------------------------------------- |
+| columns  | `list`   | A list of column names for molecular data sets |
+
+#### columns
+
+*Type:* `list` *(Optional, default: `['x', 'y', 'z']`)*
+
+Specifies a list of column names for all molecular data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates.
 
 ## SpatiallyResolvedDataProperties (object)
 
-#### Initialization
+### Initializer
 
 ```python
-spatially_resolved_properties = el.SpatiallyResolvedDataProperties(
-    columns=['x', 'y', 'z', 'rho', "gamma", "epxc", "deriv1", "deriv2"],
-    density_property='rho', density_lower_limit=0.00001,  density_upper_limit=1000000)
+el.SpatiallyResolvedDataProperties(columns: list, density_property: str, density_lower_limit: float, density_upper_limit: float)
 ```
 
-Parameters:
+### Parameters
 
-- `columns` (optional): a list of properties to be plotted in the visualization
-  
-  - If none provided, the default is `['x', 'y', 'z', 'rho']`
-  
-  - Otherwise, if a list is provided, it must contain the 3D coordinates and the `density_property` at a minimum
+| **Name**            | **Type** | **Description**                                                     |
+| ------------------- | -------- | ------------------------------------------------------------------- |
+| columns             | `list`   | A list of column names for spatially resolved data sets             |
+| density_property    | `str`    | Column/property in columns corresponding to the density of the atom |
+| density_lower_limit | `float`  | Lower limit of the density_property                                 |
+| density_upper_limit | `float`  | Upper limit of the density_property                                 |
 
-- `density_property` (optional): column in `columns` corresponding to the density of the atom
-  
-  - If none provided, default is `'rho'`
-  
-  - Provided value must be in `columns`
+#### columns
 
-- `density_lower_limit` (optional): lower limit of the `density_property`
-  
-  - If none provided, default is `1e-3`
+*Type:* `list` *(Optional, default: `['x', 'y', 'z', 'rho']`)*
 
-- `density_upper_limit` (optional): lower limit of the`density_property`
-  
-  - If none provided, default is `1e6`
+Specifies a list of column names for all spatially resolved data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates as well as the provided density_property.
+
+#### density_property
+
+*Type:* `str` *(Optional, default: `'rho'`)*
+
+Columns name in columns list corresponding to the density of the atom. If a value is provided it must appear in the columns list provided.
+
+#### density_lower_limit
+
+*Type:* `float` *(Optional, default: `1e-3`)*
+
+Lower limit of the density_property.
+
+#### density_upper_limit
+
+*Type:* `float` *(Optional, default: `1e6`)*
+
+Lower limit of the density_property.
 
 ## FramedDataProperties (object)
 
@@ -62,14 +75,20 @@ To show the behavior of a system over time, a `Plot` must be provided with the n
 
 The `FramedDataProperties` object is unique in that, unlike the previous 2 sets of properties, there is no corresponding 'framed data' type. Either molecular or spatially resolved data can be framed, and ElectroLens will automatically check to see if the data is framed using the `frame_column` provided by the user.
 
-#### Initialization
+### Initializer
 
 ```python
-framed_properties = el.FramedDataProperties(frame_column="frame")
+el.FramedDataProperties(frame_column: str)
 ```
 
-Parameters:
+### Parameters
 
-- `frame_column` (optional): name of the column in the data set that corresponds to the frame number in a molecular simulation over time
-  
-  - If none provided, default is `'frame'`
+| **Name**     | **Type** | **Description**                                  |
+| ------------ | -------- | ------------------------------------------------ |
+| frame_column | `str`    | Name of the column representing the frame number |
+
+#### frame_column
+
+*Type:* `str` *(Optional, default: `'frame'`)*
+
+Name of the column in the data set that corresponds to the frame number in a molecular simulation over time

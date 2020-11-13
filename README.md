@@ -95,5 +95,3 @@ plot.add_view(view)
 To start the visualization, simply execute `plot.show()` , which will create a new window containing all of the views added to the plots. This simple script will produce the following visualization:
 
 <img src="/docs/images/single_view_example.png" />
-
-
