@@ -64,7 +64,7 @@ def add_view(self, plot_view: View) -> None
 
 *Parameters:*
 
-- **plot_view**: [`View`](./View.md)
+- **plot_view**: [`View`](./View.md#Views)
 
 *Returns: none*
 
@@ -78,7 +78,7 @@ def remove_view(self, plot_view: View) -> None
 
 *Parameters:*
 
-- **plot_view**: [`View`](./View.md)
+- **plot_view**: [`View`](./View.md#Views)
 
 *Returns: none*
 
