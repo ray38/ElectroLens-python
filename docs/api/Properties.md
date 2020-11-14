@@ -2,11 +2,11 @@
 
 Properties are used to define the structure of the data being visualized. Because ElectroLens can handle so many different data formats, the application cannot make any assumptions about the structure of the data--that is, ElectroLens needs to be told what each column in a data set represents (i.e. is this column the x coordinate of the atom, is it the name of the atom, etc). 
 
-At a minimum, each `Properties` object will include three properties for physical coordinates to actually visualize atoms in space, but data sets could contain additional properties which the user must define.
+At a minimum, each properties object will include three properties for physical coordinates to actually visualize atoms in space, but data sets could contain additional properties which the user must define.
 
-A `Properties` object is created and used at the `Plot` level, so a set of properties for a given data type will apply to all data sets of the corresponding type in that plot (i.e. all molecular data sets should have the columns defined in the plot's `MolecularDataProperties` object).
+A properties object is created and used at the [`Plot`](./Plot.md#Plot) level, so a set of properties for a given data type will apply to all data sets of the corresponding type in that plot (i.e. all molecular data sets should have the columns defined in the plot's `MolecularDataProperties` object).
 
-## MolecularDataProperties (object)
+## MolecularDataProperties
 
 ### Initializer
 
@@ -24,9 +24,9 @@ el.MolecularDataProperties(columns: list)
 
 *Type:* `list` *(Optional, default: `['x', 'y', 'z']`)*
 
-Specifies a list of column names for all molecular data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates.
+Specifies a list of column names for properties to be visualized for all molecular data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates.
 
-## SpatiallyResolvedDataProperties (object)
+## SpatiallyResolvedDataProperties
 
 ### Initializer
 
@@ -47,7 +47,7 @@ el.SpatiallyResolvedDataProperties(columns: list, density_property: str, density
 
 *Type:* `list` *(Optional, default: `['x', 'y', 'z', 'rho']`)*
 
-Specifies a list of column names for all spatially resolved data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates as well as the provided density_property.
+Specifies a list of column names for properties to be visualized for all spatially resolved data sets in the plot. If a list is provided, it must contain at least the default xyz coordinates as well as the provided density_property.
 
 #### density_property
 
@@ -67,11 +67,11 @@ Lower limit of the density_property.
 
 Lower limit of the density_property.
 
-## FramedDataProperties (object)
+## FramedDataProperties
 
 Framed data represents data that changes over time in a dynamic system. A "frame" represents a single point in time in a simulation. Framed data sets contain atomic data (either molecular or spatially resolved) for each atom in the system at each point in time.
 
-To show the behavior of a system over time, a `Plot` must be provided with the name of the column in data sets corresponding to the frame. ElectroLens can then gather and visualize the atomic data at each unique frame.
+To show the behavior of a system over time, a [`Plot`](./Plot.md#Plot) must be provided with the name of the column in data sets corresponding to the frame. ElectroLens can then gather and visualize the atomic data at each unique frame.
 
 The `FramedDataProperties` object is unique in that, unlike the previous 2 sets of properties, there is no corresponding 'framed data' type. Either molecular or spatially resolved data can be framed, and ElectroLens will automatically check to see if the data is framed using the `frame_column` provided by the user.
 

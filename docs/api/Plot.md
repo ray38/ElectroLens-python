@@ -2,7 +2,7 @@
 
 The `Plot` module represents the top-level container of all data sets being visualized. A `Plot` object will hold properties objects to be applied to data sets as well as the data sets themselves, containerized into `View`s.
 
-## Plot (object)
+## Plot
 
 ### Initializer
 
@@ -12,30 +12,30 @@ el.Plot(spatially_resolved_properties: SpatiallyResolvedDataProperties, molecula
 
 ### Parameters
 
-| **Name**                      | **Type**                                                                              | **Description**                             |
-| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------- |
-| spatially_resolved_properties | [`SpatiallyResolvedDataProperties`](../Properties.md#SpatiallyResolvedDataProperties) | Properties for spatially resolved data sets |
-| molecular_properties          | `MolecularDataProperties`                                                             | Properties for molecular data sets          |
-| framed_properties             | `FramedDataProperties`                                                                | Frame property in data sets                 |
-| configuration_file            | `str`                                                                                 | JSON configuration file                     |
+| **Name**                      | **Type**                                                                             | **Description**                             |
+| ----------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
+| spatially_resolved_properties | [`SpatiallyResolvedDataProperties`](./Properties.md#SpatiallyResolvedDataProperties) | Properties for spatially resolved data sets |
+| molecular_properties          | [`MolecularDataProperties`](./Properties.md#MolecularDataProperties)                 | Properties for molecular data sets          |
+| framed_properties             | [`FramedDataProperties`](./Properties.md#FramedDataProperties)                       | Frame property in data sets                 |
+| configuration_file            | `str`                                                                                | JSON configuration file                     |
 
-*If configuration_file provided, none of the properties parameters can be provided. Otherwise, **at least one** of `SpatiallyResolvedDataProperties` and `MolecularDataProperties` must be provided*
+*If configuration_file provided, none of the properties parameters can be provided. Otherwise, **at least one** of [`SpatiallyResolvedDataProperties`](./Properties.md#SpatiallyResolvedDataProperties) and [`MolecularDataProperties`](./Properties.md#MolecularDataProperties) must be provided*
 
 #### spatially_resolved_properties
 
-*Type:* `SpatiallyResolvedDataProperties`
+*Type:* [`SpatiallyResolvedDataProperties`](./Properties.md#SpatiallyResolvedDataProperties)
 
 Specifies the set of properties to be used for visualizing all spatially resolved data sets added to the plot
 
 #### molecular_properties
 
-*Type:* `MolecularDataProperties`
+*Type:* [`MolecularDataProperties`](./Properties.md#MolecularDataProperties)
 
 Specifies the set of properties to be used for visualizing all molecular data sets added to the plot
 
 #### framed_properties
 
-*Type:* `FramedDataProperties`
+*Type:* [`FramedDataProperties`](./Properties.md#FramedDataProperties)
 
 Specifies the column name of the frame property present in the atomic data property sets provided
 
@@ -64,7 +64,7 @@ def add_view(self, plot_view: View) -> None
 
 *Parameters:*
 
-- **plot_view**: `View`
+- **plot_view**: [`View`](./View.md)
 
 *Returns: none*
 
@@ -78,7 +78,7 @@ def remove_view(self, plot_view: View) -> None
 
 *Parameters:*
 
-- **plot_view**: `View`
+- **plot_view**: [`View`](./View.md)
 
 *Returns: none*
 

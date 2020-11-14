@@ -4,23 +4,23 @@ The `View` module serves as the container for the actual data set. ElectroLens c
 
 Views hold all atomic data as well as the metadata associated with a particular visualization, such as the dimensions of the system in which the atoms exist. A single view can simulatenously hold both molecular data and spatially resolved data.
 
-## ThreeDView (object)
+## ThreeDView
 
 A `ThreeDView` is used to show ball-and-stick molecules and atoms in the system. The coordiantes provided in the data set are used to place atoms and molecules in 3D space.
 
 ### Initializer
 
 ```python
-el.ThreeDView(system_name: str, system_dimensions: list, system_latice_vectors: list)
+el.ThreeDView(system_name: str, system_dimensions: list, system_lattice_vectors: list)
 ```
 
 ### Parameters
 
-| **Name**              | **Type** | **Description**                              |
-| --------------------- | -------- | -------------------------------------------- |
-| system_name           | `str`    | The name of this view/molecular system       |
-| system_dimensions     | `list`   | Dimensions of cell in which atoms are placed |
-| system_latice_vectors | `list`   | Nested lists for lattice vectors             |
+| **Name**               | **Type** | **Description**                              |
+| ---------------------- | -------- | -------------------------------------------- |
+| system_name            | `str`    | The name of this view/molecular system       |
+| system_dimensions      | `list`   | Dimensions of cell in which atoms are placed |
+| system_lattice_vectors | `list`   | Nested lists for lattice vectors             |
 
 #### system_name
 
@@ -54,7 +54,7 @@ def add_data(self, data: Union[SpatiallyResolvedData, MolecularData], output_dat
 
 *Parameters:*
 
-- **data**: `SpatiallyResolvedData` or `MolecularData`
+- **data**: [`SpatiallyResolvedData`](./Data.md#SpatiallyResolvedData) or [`MolecularData`](./Data.md#MolecularData)
 
 - **output_data_file**: `str` *(Optional, default is `None`)*
 
