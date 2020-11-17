@@ -125,11 +125,7 @@ class Converter(ABC):
             return ASEAtomsToMolecularDataConverter(data)
 
         if source_format == DataFormat.ARRAY_DATA:
-            if target_format == DataFormat.MOLECULAR_DATA:
-                return ArrayToMolecularDataConverter(data)
-
-            if target_format == DataFormat.SPATIALLY_RESOLVED_DATA:
-                return ArrayToSpatiallyResolvedDataConverter(data)
+            return ArrayToAnyDataConverter(data)
 
         if source_format == DataFormat.FILE_DATA:
             return FileToAnyDataConverter(data, target_format)
@@ -319,85 +315,7 @@ class ASETrajectoryToMolecularDataConverter(Converter):
                     output['data'].append(atom_data)
 
 
-class ArrayToMolecularDataConverter(Converter):
-    """
-    Converter that converts a numpy array of data to JSON configuration
-    Supports framed and non-framed data
-    """
-    def __init__(self, data: np.ndarray):
-        """
-        initializes the converter
-        Args:
-            data: input numpy array
-        """
-        super().__init__(data)
-
-    def convert(self,
-                output: dict,
-                properties: Union[SpatiallyResolvedDataProperties, MolecularDataProperties],
-                framed_properties: FramedDataProperties = None,
-                extra_properties: namedtuple = None,
-                data_output_file: IO = None) -> None:
-        """
-        converts data and updates output dictionary
-        Args:
-            output: the output dictionary to be updated
-            properties: spatially resolved or molecular properties provided at plot level
-            framed_properties: framed properties provided at plot level
-            extra_properties: any extra properties required by the converter
-            data_output_file: filepath for storing data instead of being stored in configuration
-
-        Returns: None
-        """
-        if isinstance(self.data, np.ndarray):
-            self.__convert__(output, properties, extra_properties, data_output_file)
-        else:
-            raise TypeError('input data is not numpy array')
-
-    def __convert__(self, output: dict, properties: MolecularDataProperties,
-                    extra_properties: namedtuple, data_output_file: IO):
-        # check if additional inputs are present
-        if extra_properties.np_atoms is None:
-            raise TypeError('missing atom names for numpy array input data')
-        if extra_properties.cell is None:
-            raise TypeError('missing cell configuration for numpy array input data')
-
-        _init_atoms_(output, extra_properties.cell)
-
-        output['moleculeData'] = {}
-        output = output['moleculeData']
-
-        if data_output_file is not None:
-            _set_data_filename_(output, data_output_file)
-            writer = csv.writer(data_output_file, delimiter=',')
-            writer.writerow(properties.columns)
-
-            for atom in range(len(self.data)):
-                # add all of the properties for current atom (including frame if it exists)
-                atom_props = self.data[atom]
-                row = []
-                for column in properties.columns:
-                    col_idx = properties.columns.index(column)
-                    row.append(atom_props[col_idx])
-                # atom is last in the list
-                row.append(extra_properties.np_atoms[atom])
-                writer.writerow(row)
-        else:
-            output['data'] = []
-            # each row in the 2D array is a single atom and its properties
-            for atom in range(len(self.data)):
-                atom_props = self.data[atom]
-                # add value from every column in the row (including the frame property if it exists)
-                atom_data = {}
-                for column in properties.columns:
-                    col_idx = properties.columns.index(column)
-                    atom_data[column] = atom_props[col_idx]
-                # add the name of the atom
-                atom_data["atom"] = extra_properties.np_atoms[atom]
-                output['data'].append(atom_data)
-
-
-class ArrayToSpatiallyResolvedDataConverter(Converter):
+class ArrayToAnyDataConverter(Converter):
     """
     converts numpy array to spatially resolved data json
     """
@@ -427,12 +345,63 @@ class ArrayToSpatiallyResolvedDataConverter(Converter):
         Returns: None
         """
         if isinstance(self.data, np.ndarray):
-            self.__convert__(output, properties, data_output_file)
+            self.__convert__(output, properties, extra_properties, data_output_file)
         else:
             raise TypeError('input data is not numpy array')
 
-    def __convert__(self, output: dict, properties: SpatiallyResolvedDataProperties, data_output_file: IO):
-        pass
+    def __convert__(self, output: dict, properties: Union[SpatiallyResolvedDataProperties, MolecularDataProperties],
+                    extra_properties: namedtuple, data_output_file: IO):
+        # check additional inputs
+        # must either include 'atom' in the provided properties or provide a list of the atoms for each row in the data
+        if 'atom' not in properties.columns and extra_properties.np_atoms is None:
+            raise TypeError('atom not in provided columns and missing atom names for numpy array input data')
+        if extra_properties.cell is None:
+            raise TypeError('missing cell configuration for numpy array input data')
+
+        _init_atoms_(output, extra_properties.cell)
+
+        output['moleculeData'] = {}
+        output = output['moleculeData']
+
+        # user provided an output file path - write input data to the file path and add the path to output JSON config
+        if data_output_file is not None:
+            _set_data_filename_(output, data_output_file)
+            writer = csv.writer(data_output_file, delimiter=',')
+
+            # add 'atom' to properties row at the top of the file
+            columns = properties.columns.copy()
+            if 'atom' not in columns:
+                columns.append('atom')
+            writer.writerow(columns)
+
+            # iterate through each row in the 2D array
+            for atom in range(len(self.data)):
+                # add all of the properties for the current atom (including any spatially resolved properties and
+                #   the frame column if it exists)
+                atom_props = self.data[atom]
+                row = []
+                for column in properties.columns:
+                    col_idx = properties.columns.index(column)
+                    row.append(atom_props[col_idx])
+                # atom is last in the list
+                # if user did not include the 'atom' property in the data, use the np_atoms list - otherwise, the data
+                #    would have already been added in the above for loop
+                if 'atom' not in properties.columns:
+                    row.append(extra_properties.np_atoms[atom])
+                writer.writerow(row)
+        else:
+            output['data'] = []
+            # each row in the 2D array is a single atom and its properties
+            for atom in range(len(self.data)):
+                atom_props = self.data[atom]
+                # add value from every column in the row
+                atom_data = {}
+                for column in properties.columns:
+                    col_idx = properties.columns.index(column)
+                    atom_data[column] = atom_props[col_idx]
+                if 'atom' not in properties.columns:
+                    atom_data['atom'] = extra_properties.np_atoms[atom]
+                output['data'].append(atom_data)
 
 
 class FileToAnyDataConverter(Converter):
