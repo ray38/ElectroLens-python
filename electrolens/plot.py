@@ -50,7 +50,13 @@ class SpatiallyResolvedDataProperties(object):
 
         Returns: None
         """
-        configuration['spatiallyResolvedPropertyList'] = self.columns
+        # add 'atom' to list of properties in JSON config if not already present in the columns list
+        # create a copy of the list so 'atom' does not get added to self.columns
+        cols_copy = self.columns.copy()
+        if 'atom' not in cols_copy:
+            cols_copy.append('atom')
+        configuration['spatiallyResolvedPropertyList'] = cols_copy
+
         configuration['pointcloudDensity'] = self.density_property
         configuration['densityCutoffLow'] = self.density_lower_limit
         configuration['densityCutoffUp'] = self.density_upper_limit
@@ -84,7 +90,12 @@ class MolecularDataProperties(object):
 
         Returns: None
         """
-        configuration['moleculePropertyList'] = self.columns
+        # add 'atom' to list of properties in JSON config if not already present in the columns list
+        # create a copy of the list so 'atom' does not get added to self.columns
+        cols_copy = self.columns.copy()
+        if 'atom' not in cols_copy:
+            cols_copy.append('atom')
+        configuration['moleculePropertyList'] = cols_copy
 
 
 class FramedDataProperties(object):

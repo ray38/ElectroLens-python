@@ -18,7 +18,9 @@ class SpatiallyResolvedData(object):
     def __init__(self,
                  data: Union[str, np.ndarray],
                  grid_points: list = None,
-                 grid_spacing: list = None):
+                 grid_spacing: list = None,
+                 np_atoms: List[str] = None,
+                 ase_cell: cell = None):
         """
         initializes spatially resolved data
         Args:
@@ -29,6 +31,8 @@ class SpatiallyResolvedData(object):
         self.data = data
         self.grid_points = grid_points
         self.grid_spacing = grid_spacing
+        self.np_atoms = np_atoms
+        self.ase_cell = ase_cell
 
     def add_configuration(self,
                           configuration: dict,
@@ -45,6 +49,10 @@ class SpatiallyResolvedData(object):
 
         Returns: None
         """
+        # add additional properties for numpy array
+        ExtraProperties = namedtuple('ExtraProperties', ['np_atoms', 'cell'])
+        extra_properties = ExtraProperties(np_atoms=self.np_atoms, cell=self.ase_cell)
+
         # create converter
         converter = Converter.create_converter(data=self.data, target_format=DataFormat.SPATIALLY_RESOLVED_DATA)
 
@@ -53,14 +61,17 @@ class SpatiallyResolvedData(object):
             with open(data_output_file, mode='w', newline='') as file:
                 converter.convert(output=configuration,
                                   properties=properties,
+                                  extra_properties=extra_properties,
                                   framed_properties=framed_properties,
                                   data_output_file=file)
         else:
             converter.convert(output=configuration,
                               properties=properties,
+                              extra_properties=extra_properties,
                               framed_properties=framed_properties)
 
         # grid points
+        configuration['spatiallyResolvedData'] = {}
         srd_config = configuration['spatiallyResolvedData']
         if self.grid_points is not None:
             srd_config['numGridPoints'] = {
